@@ -114,7 +114,14 @@ export const config: Config = {
       'capacitor://localhost',
       'ionic://localhost',
       'http://localhost',
-      'https://localhost'
+      'https://localhost',
+      'file://',
+      'capacitor-electron://',
+      'capacitor://',
+      'ionic://',
+      'http://10.0.2.2:8080',
+      'http://10.0.2.2:8081',
+      'http://10.0.2.2:8082'
     ],
   },
   admin: {
