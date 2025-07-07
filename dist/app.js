@@ -84,7 +84,7 @@ class App {
             const dbHealth = await database_1.database.healthCheck();
             res.status(dbHealth.status === 'healthy' ? 200 : 503).json({
                 success: dbHealth.status === 'healthy',
-                message: 'Same MLI Connect API Health Check',
+                message: 'Same MLI Connect API Health Check - Environment Variables Updated',
                 timestamp: new Date().toISOString(),
                 environment: environment_1.config.server.env,
                 version: environment_1.config.server.apiVersion,
