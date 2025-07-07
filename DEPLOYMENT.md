@@ -43,7 +43,7 @@ RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 
 # CORS Configuration - IMPORTANT: Replace with your actual Vercel domain
-CORS_ORIGIN=https://your-vercel-app.vercel.app,http://localhost:8080,http://localhost:8081,http://localhost:8082,http://localhost:3000,capacitor://localhost,ionic://localhost,http://localhost,https://localhost
+CORS_ORIGIN=https://sameli-server-zjme.vercel.app,http://localhost:8080,http://localhost:8081,http://localhost:8082,http://localhost:3000,capacitor://localhost,ionic://localhost,http://localhost,https://localhost
 
 # Admin Configuration
 ADMIN_EMAIL=ilyeskhireddinem2cs@gmail.com
