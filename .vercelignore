@@ -1,0 +1,28 @@
+# Local uploads (using Cloudinary in production)
+uploads/
+
+# Development files
+.env
+.env.local
+.env.development.local
+.env.test.local
+
+# Source files (will be built)
+src/
+
+# Tests
+**/*.test.ts
+**/*.spec.ts
+test-results/
+coverage/
+
+# Development dependencies
+nodemon.json
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
