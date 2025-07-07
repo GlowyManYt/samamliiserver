@@ -4,7 +4,7 @@
   "description": "Backend API for Same MLI Connect - Service marketplace platform",
   "main": "index.js",
   "engines": {
-    "node": "18.x"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "dev": "nodemon src/server.ts",
@@ -42,11 +42,10 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.7",
-
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
-    "tsconfig-paths": "^4.2.0",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3"
   },
   "devDependencies": {
@@ -70,8 +69,5 @@
     "nodemon": "^3.0.2",
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.1"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   }
 }
