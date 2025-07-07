@@ -1,5 +1,11 @@
+import { VercelRequest, VercelResponse } from '@vercel/node';
 import App from '../src/app';
 
-// Create and export the Express app for Vercel
+// Create the Express app
 const app = new App();
-export default app.getApp();
+const expressApp = app.getApp();
+
+// Export the handler for Vercel
+export default (req: VercelRequest, res: VercelResponse) => {
+  return expressApp(req, res);
+};
