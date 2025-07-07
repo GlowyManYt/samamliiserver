@@ -1,5 +1,7 @@
-const App = require('../dist/app').default;
+import App from '../dist/app';
 
 // Create and export the Express app for Vercel
-const app = new App();
-module.exports = app.getApp();
+const appInstance = new App();
+const app = appInstance.getApp();
+
+export default app;

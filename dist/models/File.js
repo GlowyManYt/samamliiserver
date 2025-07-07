@@ -79,7 +79,7 @@ const fileSchema = new mongoose_1.Schema({
         type: String,
         required: [true, 'File category is required'],
         enum: {
-            values: ['profile', 'document', 'project', 'message'],
+            values: ['profile', 'document', 'project', 'message', 'pdf_download'],
             message: 'Invalid file category',
         },
     },
@@ -100,7 +100,6 @@ fileSchema.index({ uploadedBy: 1 });
 fileSchema.index({ category: 1 });
 fileSchema.index({ mimetype: 1 });
 fileSchema.index({ createdAt: -1 });
-fileSchema.index({ cloudinaryPublicId: 1 });
 fileSchema.index({ uploadedBy: 1, category: 1 });
 fileSchema.index({ category: 1, isPublic: 1 });
 fileSchema.statics.getByUser = function (userId, category) {

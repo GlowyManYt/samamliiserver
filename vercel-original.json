@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "public": true,
   "builds": [
     {
       "src": "api/index.ts",
@@ -19,8 +18,5 @@
         "Access-Control-Allow-Credentials": "true"
       }
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }

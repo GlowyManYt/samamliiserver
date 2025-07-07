@@ -31,10 +31,8 @@ class App {
     // Add middleware to ensure database connection before each request
     this.app.use(async (req, res, next) => {
       try {
-        if (!database.getConnectionStatus()) {
-          console.log('🔄 Establishing database connection...');
-          await database.connect();
-        }
+        // Always try to connect - the database class will handle connection reuse
+        await database.connect();
         next();
       } catch (error) {
         console.error('❌ Database connection failed:', error);

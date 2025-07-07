@@ -108,3 +108,9 @@ coverage/
 
 # Uploads (if storing locally)
 uploads/
+
+.vercel
+
+# Testing and deployment scripts
+test-db-connection.js
+test-new-deployment.bat

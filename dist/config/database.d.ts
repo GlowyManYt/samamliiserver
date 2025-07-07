@@ -1,9 +1,10 @@
 declare class Database {
     private static instance;
-    private isConnected;
+    private connectionPromise;
     private constructor();
     static getInstance(): Database;
     connect(): Promise<void>;
+    private establishConnection;
     disconnect(): Promise<void>;
     getConnectionStatus(): boolean;
     healthCheck(): Promise<{

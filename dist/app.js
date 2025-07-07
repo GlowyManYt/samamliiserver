@@ -27,10 +27,7 @@ class App {
     ensureDatabaseConnection() {
         this.app.use(async (req, res, next) => {
             try {
-                if (!database_1.database.getConnectionStatus()) {
-                    console.log('🔄 Establishing database connection...');
-                    await database_1.database.connect();
-                }
+                await database_1.database.connect();
                 next();
             }
             catch (error) {

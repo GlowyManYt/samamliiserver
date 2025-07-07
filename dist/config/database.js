@@ -8,7 +8,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const environment_1 = require("./environment");
 class Database {
     constructor() {
-        this.isConnected = false;
+        this.connectionPromise = null;
     }
     static getInstance() {
         if (!Database.instance) {
@@ -17,53 +17,53 @@ class Database {
         return Database.instance;
     }
     async connect() {
-        if (this.isConnected) {
+        if (mongoose_1.default.connection.readyState === 1) {
             console.log('Database already connected');
             return;
         }
+        if (this.connectionPromise) {
+            console.log('Database connection in progress, waiting...');
+            return this.connectionPromise;
+        }
+        this.connectionPromise = this.establishConnection();
+        return this.connectionPromise;
+    }
+    async establishConnection() {
         try {
             const mongooseOptions = {
-                maxPoolSize: 10,
-                serverSelectionTimeoutMS: 5000,
+                maxPoolSize: 5,
+                serverSelectionTimeoutMS: 10000,
                 socketTimeoutMS: 45000,
-                bufferCommands: true,
-                bufferMaxEntries: 0,
-                useNewUrlParser: true,
-                useUnifiedTopology: true,
+                bufferCommands: false,
             };
+            console.log('🔄 Connecting to MongoDB...');
             await mongoose_1.default.connect(environment_1.config.database.uri, mongooseOptions);
-            this.isConnected = true;
             console.log('✅ MongoDB connected successfully');
             mongoose_1.default.connection.on('error', (error) => {
                 console.error('❌ MongoDB connection error:', error);
-                this.isConnected = false;
+                this.connectionPromise = null;
             });
             mongoose_1.default.connection.on('disconnected', () => {
                 console.log('⚠️ MongoDB disconnected');
-                this.isConnected = false;
+                this.connectionPromise = null;
             });
             mongoose_1.default.connection.on('reconnected', () => {
                 console.log('✅ MongoDB reconnected');
-                this.isConnected = true;
-            });
-            process.on('SIGINT', async () => {
-                await this.disconnect();
-                process.exit(0);
             });
         }
         catch (error) {
             console.error('❌ MongoDB connection failed:', error);
-            this.isConnected = false;
+            this.connectionPromise = null;
             throw error;
         }
     }
     async disconnect() {
-        if (!this.isConnected) {
+        if (mongoose_1.default.connection.readyState === 0) {
             return;
         }
         try {
             await mongoose_1.default.connection.close();
-            this.isConnected = false;
+            this.connectionPromise = null;
             console.log('✅ MongoDB disconnected gracefully');
         }
         catch (error) {
@@ -72,11 +72,12 @@ class Database {
         }
     }
     getConnectionStatus() {
-        return this.isConnected && mongoose_1.default.connection.readyState === 1;
+        return mongoose_1.default.connection.readyState === 1;
     }
     async healthCheck() {
         try {
-            if (!this.isConnected) {
+            await this.connect();
+            if (mongoose_1.default.connection.readyState !== 1) {
                 return { status: 'error', message: 'Database not connected' };
             }
             await mongoose_1.default.connection.db?.admin().ping();

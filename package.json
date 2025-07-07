@@ -13,6 +13,7 @@
     "vercel-build": "npm run build",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:db": "node test-db-connection.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"
   },
