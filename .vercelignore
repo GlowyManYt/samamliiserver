@@ -28,4 +28,3 @@ logs/
 
 # Ignore old deployment files
 api/
-public/
