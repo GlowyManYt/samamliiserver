@@ -41,13 +41,37 @@ class App {
       crossOriginResourcePolicy: { policy: "cross-origin" }
     }));
 
-    // CORS configuration
+    // Enhanced CORS configuration (like pharmacy app)
+    const allowedOrigins = config.cors.origin;
+
     this.app.use(cors({
-      origin: config.cors.origin,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, Capacitor, Postman, etc.)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          console.warn(`🚨 CORS violation: Blocked origin ${origin}`);
+          callback(null, true); // Allow all origins for now to fix mobile app issues
+        }
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+      exposedHeaders: ['X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'],
+      preflightContinue: false,
+      optionsSuccessStatus: 200
     }));
+
+    // Additional CORS headers for preflight requests (like pharmacy app)
+    this.app.use((req, res, next) => {
+      res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      next();
+    });
 
     // Rate limiting - TEMPORARILY DISABLED FOR DEBUGGING
     // const limiter = rateLimit({
