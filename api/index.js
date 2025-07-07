@@ -1,20 +1,25 @@
 // Vercel serverless function entry point
-const { createServer } = require('http');
-const { Server: SocketIOServer } = require('socket.io');
+const path = require('path');
 
-// Import the compiled app
-let app;
-try {
-  // Try to import from dist first (if built)
-  app = require('../dist/app').default;
-} catch (error) {
-  // Fallback to TypeScript source with ts-node
-  require('ts-node/register');
-  app = require('../src/app').default;
-}
+// Configure ts-node for TypeScript compilation
+require('ts-node').register({
+  project: path.join(__dirname, '../tsconfig.json'),
+  transpileOnly: true,
+  compilerOptions: {
+    module: 'commonjs',
+    target: 'es2020',
+    esModuleInterop: true,
+    allowSyntheticDefaultImports: true,
+    resolveJsonModule: true,
+    skipLibCheck: true
+  }
+});
+
+// Import the TypeScript app
+const App = require('../src/app').default;
 
 // Create app instance
-const appInstance = new app();
+const appInstance = new App();
 const expressApp = appInstance.getApp();
 
 // Export for Vercel
