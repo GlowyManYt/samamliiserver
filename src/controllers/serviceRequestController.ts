@@ -98,21 +98,8 @@ export const submitServiceRequest = async (req: AuthenticatedRequest, res: Respo
     await serviceRequest.save();
     console.log('Service request after save:', serviceRequest);
 
-    // Send real-time notification to professional
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`user_${professionalId}`).emit('service_request_notification', {
-        senderId: clientId,
-        serviceRequestId: serviceRequest._id,
-        serviceType: serviceType,
-        description: projectDescription,
-        clientName: req.user?.name || req.user?.email || 'عميل',
-        status: 'pending',
-        message: `طلب خدمة جديد: ${serviceType}`,
-        timestamp: new Date(),
-      });
-      console.log(`Real-time notification sent to professional ${professionalId}`);
-    }
+    // Note: Real-time notifications removed - using HTTP polling instead
+    console.log(`Service request notification would be sent to professional ${professionalId}`);
 
     console.log(`Service request submitted by client ${clientId} to professional ${professionalId}`);
 

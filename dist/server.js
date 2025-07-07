@@ -4,27 +4,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const http_1 = require("http");
-const socket_io_1 = require("socket.io");
 const app_1 = __importDefault(require("./app"));
 const environment_1 = require("./config/environment");
-const socketHandler_1 = require("./socket/socketHandler");
 class Server {
     constructor() {
         this.app = new app_1.default();
         this.server = (0, http_1.createServer)(this.app.getApp());
-        this.initializeSocket();
-    }
-    initializeSocket() {
-        this.io = new socket_io_1.Server(this.server, {
-            cors: {
-                origin: environment_1.config.cors.origin,
-                methods: ['GET', 'POST'],
-                credentials: true,
-            },
-            transports: ['websocket', 'polling'],
-        });
-        this.app.getApp().set('io', this.io);
-        (0, socketHandler_1.initializeSocket)(this.io);
     }
     start() {
         this.server.listen(environment_1.config.server.port, () => {
@@ -62,9 +47,6 @@ class Server {
     }
     getServer() {
         return this.server;
-    }
-    getIO() {
-        return this.io;
     }
 }
 const server = new Server();

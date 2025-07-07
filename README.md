@@ -8,7 +8,7 @@ Backend API for Same MLI Connect - A service marketplace platform connecting ser
 - Service provider and customer management
 - Service listings and categories
 - Booking and appointment system
-- Real-time messaging with Socket.IO
+- HTTP-based messaging with polling
 - File upload with Cloudinary integration
 - Email notifications
 - Rate limiting and security middleware
@@ -21,7 +21,7 @@ Backend API for Same MLI Connect - A service marketplace platform connecting ser
 - **Database**: MongoDB with Mongoose
 - **Authentication**: JWT (JSON Web Tokens)
 - **File Storage**: Cloudinary
-- **Real-time**: Socket.IO
+- **Messaging**: HTTP API with polling
 - **Language**: TypeScript
 - **Testing**: Jest
 - **Documentation**: Swagger

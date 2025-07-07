@@ -1,35 +1,14 @@
 import { createServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
 import App from './app';
 import { config } from './config/environment';
-import { initializeSocket } from './socket/socketHandler';
 
 class Server {
   private app: App;
   private server: any;
-  private io!: SocketIOServer; // Using definite assignment assertion
 
   constructor() {
     this.app = new App();
     this.server = createServer(this.app.getApp());
-    this.initializeSocket();
-  }
-
-  private initializeSocket(): void {
-    this.io = new SocketIOServer(this.server, {
-      cors: {
-        origin: config.cors.origin,
-        methods: ['GET', 'POST'],
-        credentials: true,
-      },
-      transports: ['websocket', 'polling'],
-    });
-
-    // Make Socket.IO instance available to controllers
-    this.app.getApp().set('io', this.io);
-
-    // Initialize socket handlers
-    initializeSocket(this.io);
   }
 
   public start(): void {
@@ -78,9 +57,7 @@ class Server {
     return this.server;
   }
 
-  public getIO(): SocketIOServer {
-    return this.io;
-  }
+
 }
 
 // Start the server
