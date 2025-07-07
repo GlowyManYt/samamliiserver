@@ -18,12 +18,25 @@ class Database {
     }
     async connect() {
         if (mongoose_1.default.connection.readyState === 1) {
-            console.log('Database already connected');
-            return;
+            try {
+                await mongoose_1.default.connection.db?.admin().ping();
+                console.log('Database connection verified and healthy');
+                return;
+            }
+            catch (error) {
+                console.log('Database connection exists but unhealthy, reconnecting...');
+                this.connectionPromise = null;
+                await mongoose_1.default.connection.close().catch(() => { });
+            }
         }
         if (this.connectionPromise) {
             console.log('Database connection in progress, waiting...');
             return this.connectionPromise;
+        }
+        if (mongoose_1.default.connection.readyState === 2 || mongoose_1.default.connection.readyState === 3) {
+            console.log('Database in transition state, waiting...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return this.connect();
         }
         this.connectionPromise = this.establishConnection();
         return this.connectionPromise;
@@ -32,13 +45,34 @@ class Database {
         try {
             const mongooseOptions = {
                 maxPoolSize: 5,
-                serverSelectionTimeoutMS: 10000,
-                socketTimeoutMS: 45000,
+                minPoolSize: 1,
+                serverSelectionTimeoutMS: 5000,
+                socketTimeoutMS: 20000,
+                connectTimeoutMS: 10000,
                 bufferCommands: false,
+                maxIdleTimeMS: 10000,
+                retryWrites: true,
+                retryReads: false,
+                autoIndex: false,
+                family: 4,
             };
             console.log('🔄 Connecting to MongoDB...');
-            await mongoose_1.default.connect(environment_1.config.database.uri, mongooseOptions);
-            console.log('✅ MongoDB connected successfully');
+            console.log('🔗 URI:', environment_1.config.database.uri.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@'));
+            if (mongoose_1.default.connection.readyState !== 0) {
+                console.log('🔄 Force closing existing connection...');
+                await mongoose_1.default.disconnect();
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            const connectPromise = mongoose_1.default.connect(environment_1.config.database.uri, mongooseOptions);
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Connection timeout after 10 seconds')), 10000);
+            });
+            await Promise.race([connectPromise, timeoutPromise]);
+            console.log('🔄 Verifying connection...');
+            await mongoose_1.default.connection.db?.admin().ping();
+            console.log('✅ MongoDB connected and verified successfully');
+            console.log('📊 Connection state:', mongoose_1.default.connection.readyState);
+            mongoose_1.default.connection.removeAllListeners();
             mongoose_1.default.connection.on('error', (error) => {
                 console.error('❌ MongoDB connection error:', error);
                 this.connectionPromise = null;
@@ -47,14 +81,17 @@ class Database {
                 console.log('⚠️ MongoDB disconnected');
                 this.connectionPromise = null;
             });
-            mongoose_1.default.connection.on('reconnected', () => {
-                console.log('✅ MongoDB reconnected');
-            });
         }
         catch (error) {
             console.error('❌ MongoDB connection failed:', error);
             this.connectionPromise = null;
-            throw error;
+            try {
+                await mongoose_1.default.disconnect();
+            }
+            catch (cleanupError) {
+                console.error('❌ Cleanup error:', cleanupError);
+            }
+            throw new Error(`Database connection failed: ${error.message}`);
         }
     }
     async disconnect() {

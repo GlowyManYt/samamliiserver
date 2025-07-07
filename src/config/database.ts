@@ -15,16 +15,32 @@ class Database {
   }
 
   public async connect(): Promise<void> {
-    // If already connected, return immediately
+    // Check if connection is healthy
     if (mongoose.connection.readyState === 1) {
-      console.log('Database already connected');
-      return;
+      try {
+        // Ping to verify connection is actually working
+        await mongoose.connection.db?.admin().ping();
+        console.log('Database connection verified and healthy');
+        return;
+      } catch (error) {
+        console.log('Database connection exists but unhealthy, reconnecting...');
+        this.connectionPromise = null;
+        // Force close the unhealthy connection
+        await mongoose.connection.close().catch(() => {});
+      }
     }
 
     // If connection is in progress, wait for it
     if (this.connectionPromise) {
       console.log('Database connection in progress, waiting...');
       return this.connectionPromise;
+    }
+
+    // If connection is connecting or disconnecting, wait a bit and retry
+    if (mongoose.connection.readyState === 2 || mongoose.connection.readyState === 3) {
+      console.log('Database in transition state, waiting...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return this.connect(); // Retry
     }
 
     // Start new connection
@@ -34,21 +50,50 @@ class Database {
 
   private async establishConnection(): Promise<void> {
     try {
-      // Optimized settings for Vercel serverless
+      // PRODUCTION-READY settings - CRITICAL FIX for buffering timeout
       const mongooseOptions = {
-        maxPoolSize: 5, // Reduced for serverless
-        serverSelectionTimeoutMS: 10000, // Increased timeout
-        socketTimeoutMS: 45000,
-        bufferCommands: false, // Disable buffering to get immediate errors
-        // Removed deprecated bufferMaxEntries option
+        maxPoolSize: 5, // Smaller pool for faster connection
+        minPoolSize: 1, // Keep at least 1 connection
+        serverSelectionTimeoutMS: 5000, // Faster server selection
+        socketTimeoutMS: 20000, // Shorter socket timeout
+        connectTimeoutMS: 10000, // Faster connection timeout
+        bufferCommands: false, // CRITICAL: Disable buffering to prevent timeout errors
+        maxIdleTimeMS: 10000, // Close idle connections quickly
+        retryWrites: true,
+        retryReads: false, // Disable retry reads for faster failures
+        autoIndex: false, // Don't build indexes
+        family: 4, // Use IPv4
       };
 
       console.log('🔄 Connecting to MongoDB...');
-      await mongoose.connect(config.database.uri, mongooseOptions);
+      console.log('🔗 URI:', config.database.uri.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@'));
 
-      console.log('✅ MongoDB connected successfully');
+      // Force close any existing connection
+      if (mongoose.connection.readyState !== 0) {
+        console.log('🔄 Force closing existing connection...');
+        await mongoose.disconnect();
+        // Wait for cleanup
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
 
-      // Handle connection events
+      // Connect with timeout protection
+      const connectPromise = mongoose.connect(config.database.uri, mongooseOptions);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Connection timeout after 10 seconds')), 10000);
+      });
+
+      await Promise.race([connectPromise, timeoutPromise]);
+
+      // Verify connection is actually working
+      console.log('🔄 Verifying connection...');
+      await mongoose.connection.db?.admin().ping();
+
+      console.log('✅ MongoDB connected and verified successfully');
+      console.log('📊 Connection state:', mongoose.connection.readyState);
+
+      // Set up event handlers (remove old ones first)
+      mongoose.connection.removeAllListeners();
+
       mongoose.connection.on('error', (error) => {
         console.error('❌ MongoDB connection error:', error);
         this.connectionPromise = null;
@@ -59,14 +104,18 @@ class Database {
         this.connectionPromise = null;
       });
 
-      mongoose.connection.on('reconnected', () => {
-        console.log('✅ MongoDB reconnected');
-      });
-
     } catch (error) {
       console.error('❌ MongoDB connection failed:', error);
       this.connectionPromise = null;
-      throw error;
+
+      // Force cleanup
+      try {
+        await mongoose.disconnect();
+      } catch (cleanupError) {
+        console.error('❌ Cleanup error:', cleanupError);
+      }
+
+      throw new Error(`Database connection failed: ${error.message}`);
     }
   }
 
