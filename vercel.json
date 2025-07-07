@@ -3,11 +3,19 @@
   "public": true,
   "builds": [
     {
+      "src": "api/hello.js",
+      "use": "@vercel/node@18.x"
+    },
+    {
       "src": "api/index.ts",
       "use": "@vercel/node@18.x"
     }
   ],
   "routes": [
+    {
+      "src": "/hello",
+      "dest": "/api/hello.js"
+    },
     {
       "src": "/(.*)",
       "dest": "/api/index.ts"
