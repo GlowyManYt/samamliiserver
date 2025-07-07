@@ -106,7 +106,7 @@ export const config: Config = {
     },
   },
   cors: {
-    origin: process.env.CORS_ORIGIN?.split(',') || [
+    origin: process.env.CORS_ORIGIN?.split(',').map(origin => origin.trim()) || [
       'http://localhost:8080',
       'http://localhost:8081',
       'http://localhost:8082',
