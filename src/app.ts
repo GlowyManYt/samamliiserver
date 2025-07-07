@@ -20,19 +20,31 @@ class App {
 
   constructor() {
     this.app = express();
-    this.initializeDatabase();
     this.initializeMiddlewares();
     this.initializeRoutes();
     this.initializeErrorHandling();
+    // Initialize database connection for Vercel
+    this.ensureDatabaseConnection();
   }
 
-  private async initializeDatabase(): Promise<void> {
-    try {
-      await database.connect();
-    } catch (error) {
-      console.error('Failed to connect to database:', error);
-      process.exit(1);
-    }
+  private ensureDatabaseConnection(): void {
+    // Add middleware to ensure database connection before each request
+    this.app.use(async (req, res, next) => {
+      try {
+        if (!database.getConnectionStatus()) {
+          console.log('🔄 Establishing database connection...');
+          await database.connect();
+        }
+        next();
+      } catch (error) {
+        console.error('❌ Database connection failed:', error);
+        res.status(503).json({
+          success: false,
+          message: 'Database connection failed',
+          error: process.env.NODE_ENV === 'development' ? error : 'Service temporarily unavailable'
+        });
+      }
+    });
   }
 
   private initializeMiddlewares(): void {

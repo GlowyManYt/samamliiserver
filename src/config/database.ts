@@ -25,7 +25,10 @@ class Database {
         maxPoolSize: 10,
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
-        bufferCommands: false,
+        bufferCommands: true, // Enable buffering for Vercel serverless
+        bufferMaxEntries: 0,
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
       };
 
       await mongoose.connect(config.database.uri, mongooseOptions);
