@@ -3,20 +3,42 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import { connectDatabase } from '../src/config/database';
+import mongoose from 'mongoose';
 
-// Import routes
-import authRoutes from '../src/routes/authRoutes';
-import userRoutes from '../src/routes/userRoutes';
-import serviceRoutes from '../src/routes/serviceRoutes';
-import fileRoutes from '../src/routes/fileRoutes';
-import messageRoutes from '../src/routes/messageRoutes';
-import notificationRoutes from '../src/routes/notificationRoutes';
+// Import route handlers (simplified for Vercel)
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const app = express();
 
+// Simple database connection for Vercel
+async function connectDatabase() {
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+
+  try {
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI environment variable is required');
+    }
+
+    await mongoose.connect(mongoUri, {
+      maxPoolSize: 5,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false,
+    });
+
+    console.log('✅ MongoDB connected successfully');
+  } catch (error) {
+    console.error('❌ MongoDB connection failed:', error);
+    throw error;
+  }
+}
+
 // Connect to database
-connectDatabase();
+connectDatabase().catch(console.error);
 
 // Security middleware
 app.use(helmet({
@@ -67,13 +89,28 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// API routes
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/services', serviceRoutes);
-app.use('/api/v1/files', fileRoutes);
-app.use('/api/v1/messages', messageRoutes);
-app.use('/api/v1/notifications', notificationRoutes);
+// Simple API routes for testing
+app.get('/api/v1/test', (req, res) => {
+  res.json({
+    message: 'API is working!',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+app.post('/api/v1/auth/test', (req, res) => {
+  res.json({
+    message: 'Auth endpoint is working!',
+    body: req.body
+  });
+});
+
+app.get('/api/v1/users/test', (req, res) => {
+  res.json({
+    message: 'Users endpoint is working!',
+    database_connected: mongoose.connection.readyState === 1
+  });
+});
 
 // Health check
 app.get('/health', (req, res) => {
@@ -107,13 +144,11 @@ app.get('/api/v1', (req, res) => {
   res.json({
     message: 'Same MLI Connect API v1',
     status: 'active',
+    database_status: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     endpoints: {
-      auth: '/api/v1/auth',
-      users: '/api/v1/users',
-      services: '/api/v1/services',
-      files: '/api/v1/files',
-      messages: '/api/v1/messages',
-      notifications: '/api/v1/notifications'
+      test: '/api/v1/test',
+      auth_test: '/api/v1/auth/test',
+      users_test: '/api/v1/users/test'
     }
   });
 });
