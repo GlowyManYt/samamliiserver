@@ -26,3 +26,7 @@ nodemon.json
 # Logs
 *.log
 logs/
+
+# Ignore old deployment files
+api/
+public/
