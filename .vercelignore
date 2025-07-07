@@ -7,8 +7,7 @@ uploads/
 .env.development.local
 .env.test.local
 
-# Source files (will be built)
-src/
+# Source files are needed for build - don't ignore src/
 
 # Tests
 **/*.test.ts
