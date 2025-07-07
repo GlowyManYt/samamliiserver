@@ -2,7 +2,7 @@
   "name": "same-mli-connect-backend",
   "version": "1.0.0",
   "description": "Backend API for Same MLI Connect - Service marketplace platform",
-  "main": "dist/server.js",
+  "main": "index.js",
   "engines": {
     "node": "18.x"
   },
