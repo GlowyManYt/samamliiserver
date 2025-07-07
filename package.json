@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Backend API for Same MLI Connect - Service marketplace platform",
   "main": "dist/server.js",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "dev": "nodemon src/server.ts",
     "build": "tsc",
