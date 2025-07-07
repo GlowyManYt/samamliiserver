@@ -85,6 +85,24 @@ app.get('/health', (req, res) => {
 });
 
 // Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Same MLI Connect API',
+    status: 'active',
+    version: 'v1',
+    endpoints: {
+      health: '/health',
+      api: '/api/v1',
+      auth: '/api/v1/auth',
+      users: '/api/v1/users',
+      services: '/api/v1/services',
+      files: '/api/v1/files',
+      messages: '/api/v1/messages',
+      notifications: '/api/v1/notifications'
+    }
+  });
+});
+
 app.get('/api/v1', (req, res) => {
   res.json({
     message: 'Same MLI Connect API v1',
