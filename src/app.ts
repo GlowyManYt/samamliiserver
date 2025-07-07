@@ -146,6 +146,31 @@ class App {
   }
 
   private initializeRoutes(): void {
+    // Health check route for root path
+    this.app.get('/', (req: Request, res: Response) => {
+      res.json({
+        success: true,
+        message: 'Same MLI Connect API is running',
+        version: config.server.apiVersion,
+        timestamp: new Date().toISOString(),
+        endpoints: {
+          auth: `/api/${config.server.apiVersion}/auth`,
+          users: `/api/${config.server.apiVersion}/users`,
+          messages: `/api/${config.server.apiVersion}/messages`,
+          serviceRequests: `/api/${config.server.apiVersion}/service-requests`
+        }
+      });
+    });
+
+    // Health check route
+    this.app.get('/health', (req: Request, res: Response) => {
+      res.json({
+        success: true,
+        message: 'API is healthy',
+        timestamp: new Date().toISOString()
+      });
+    });
+
     // API routes
     this.app.use(`/api/${config.server.apiVersion}/auth`, authRoutes);
     this.app.use(`/api/${config.server.apiVersion}/users`, userRoutes);

@@ -113,6 +113,27 @@ class App {
         });
     }
     initializeRoutes() {
+        this.app.get('/', (req, res) => {
+            res.json({
+                success: true,
+                message: 'Same MLI Connect API is running',
+                version: environment_1.config.server.apiVersion,
+                timestamp: new Date().toISOString(),
+                endpoints: {
+                    auth: `/api/${environment_1.config.server.apiVersion}/auth`,
+                    users: `/api/${environment_1.config.server.apiVersion}/users`,
+                    messages: `/api/${environment_1.config.server.apiVersion}/messages`,
+                    serviceRequests: `/api/${environment_1.config.server.apiVersion}/service-requests`
+                }
+            });
+        });
+        this.app.get('/health', (req, res) => {
+            res.json({
+                success: true,
+                message: 'API is healthy',
+                timestamp: new Date().toISOString()
+            });
+        });
         this.app.use(`/api/${environment_1.config.server.apiVersion}/auth`, auth_1.default);
         this.app.use(`/api/${environment_1.config.server.apiVersion}/users`, users_1.default);
         this.app.use(`/api/${environment_1.config.server.apiVersion}/messages`, messageRoutes_1.default);
